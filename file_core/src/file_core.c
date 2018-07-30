@@ -138,7 +138,8 @@ void save_text_to_file(const char* path, const char* content_format, ...) {
  *
  */
 void do_prompt_file_name(const char* prompt, char* path, int path_size) {
-	if (path == NULL){		log_error("Null path variable in do_prompt_file_name.  Required parameter.");
+	if (path == NULL){
+		log_error("Null path variable in do_prompt_file_name.  Required parameter.");
 		return;
 	}
 
