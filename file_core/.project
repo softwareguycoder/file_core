@@ -4,6 +4,8 @@
 	<comment></comment>
 	<projects>
 		<project>debug_core</project>
+		<project>file_core</project>
+		<project>console_core</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

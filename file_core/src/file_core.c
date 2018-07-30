@@ -107,3 +107,62 @@ void write_all_text(const char* path, const char* content) {
 
 	/* Done */
 }
+
+/** Shortcut for writing formatted text to a file */
+void save_text_to_file(const char* path, const char* content_format, ...) {
+	va_list args;
+	va_start(args, content_format);
+
+	if (content_format == NULL || content_format[0] == '\0') {
+		return;
+	}
+
+	char buf[strlen(content_format)+ 1];
+
+	vsprintf(buf, content_format, args);
+
+	write_all_text(path, buf);
+}
+
+/** Prompts the user for the name to use for either saving or opening a file.
+ *
+ * prompt: The prompt to display to the user for opening the file.  Must not be NULL.
+ * path: Address of a buffer that will receive the path the user typed.  This buffer must have greater than zero size.
+ * path_size: The size, in bytes, of the path buffer.  Should include the NULL terminator.
+ *
+ * Remarks:
+ * 		This function will display a prompt for the filename that a user should use for opening a file for reading,
+ * 		or for writing data to an existing file.  The prompt should make it clear to the user that blank input cancels
+ * 		the operation (i.e., if the user gets the prompt but does not want to open a file or save data to a file, they
+ * 		should be told that they can just press the ENTER key to cancel).
+ *
+ */
+void do_prompt_file_name(const char* prompt, char* path, int path_size) {
+	if (path == NULL){		log_error("Null path variable in do_prompt_file_name.  Required parameter.");
+		return;
+	}
+
+	if (prompt == NULL || strlen(prompt) == 0){
+		log_error("Null prompt variable in do_prompt_file_name.  Required parameter.");
+		return;
+	}
+
+	if (path_size <= 0){
+		log_error("Must supply integer that is a positive number for the path_size.");
+		return;
+	}
+
+	/* Call the get_line function from the console_core library in order to display the prompt and get
+	 * the user's input.  If the user does not specify anything it is probably because the user wants to cancel.
+	 */
+	int retcode = get_line(prompt, path, path_size);
+
+	if (retcode != OK && retcode != EXACTLY_CORRECT) {
+		/* No error should be shown here, since blank means the user wants to cancel the operation. */
+		return;
+	}
+
+	/* If we are here, the buffer pointed to by the path variable should now contain the path to the file
+	 * that the user wants to work with.
+	 */
+}
