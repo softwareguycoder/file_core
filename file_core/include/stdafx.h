@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <wordexp.h>
 
 #include "symbols.h"
 
