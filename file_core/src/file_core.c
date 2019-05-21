@@ -205,20 +205,10 @@ void CreateDirIfNotExists(const char* pszPathName) {
 	}
 
 	char szExpandedPathName[MAX_PATH + 1];
-
 	ShellExpand(pszPathName, szExpandedPathName, MAX_PATH + 1);
 
-	wordexp_t p;
-
-	wordexp(pszPathName, &p, 0);
-	char **w = p.we_wordv;
-	if (p.we_wordc <= 0) {
-		return;
-	}
-
 	struct stat st = { 0 };
-	if (-1 == stat(w[0], &st)) {
-		mkdir(w[0], 0777);
+	if (-1 == stat(szExpandedPathName, &st)) {
+		mkdir(szExpandedPathName, 0777);
 	}
-	wordfree(&p);
 }
