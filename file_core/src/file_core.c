@@ -171,10 +171,42 @@ void do_prompt_file_name(const char* prompt, char* path, int path_size) {
 ///////////////////////////////////////////////////////////////////////////////
 // CreateDirIfNotExists function
 
+void ShellExpand(const char* pszPathName,
+    char* pszBuffer, int nBufferSize) {
+  if (IsNullOrWhiteSpace(pszPathName)) {
+    return;
+  }
+
+  if (pszBuffer == NULL) {
+    return;
+  }
+
+  if (nBufferSize <= 0) {
+    return;
+  }
+
+  memset(pszBuffer, 0, nBufferSize);
+
+  wordexp_t p;
+  wordexp(pszPathName, &p, 0);
+  char **w = p.we_wordv;
+  if (p.we_wordc <= 0 || IsNullOrWhiteSpace(w[0])) {
+    return;
+  }
+
+  strncpy(pszBuffer, w[0], nBufferSize);
+
+  wordfree(&p);
+}
+
 void CreateDirIfNotExists(const char* pszPathName) {
 	if (IsNullOrWhiteSpace(pszPathName)) {
 		return;
 	}
+
+	char szExpandedPathName[MAX_PATH + 1];
+
+	ShellExpand(pszPathName, szExpandedPathName, MAX_PATH + 1);
 
 	wordexp_t p;
 
