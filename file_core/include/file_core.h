@@ -8,6 +8,13 @@
 #ifndef __FILE_CORE_H__
 #define __FILE_CORE_H__
 
+/**
+ * @brief Defines the maximum length for a path name.
+ */
+#ifndef MAX_PATH
+#define MAX_PATH      255
+#endif //MAX_PATH
+
 int is_file_accessible(const char* path);
 char* read_all_text(const char* path);
 void write_all_text(const char* path, const char* content);
