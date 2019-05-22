@@ -12,7 +12,7 @@
  * @brief Defines the maximum length for a path name.
  */
 #ifndef MAX_PATH
-#define MAX_PATH      255
+#define MAX_PATH      4096
 #endif //MAX_PATH
 
 int is_file_accessible(const char* path);
