@@ -6,122 +6,169 @@
  */
 
 // Contains routines to work with files
-
 #include "stdafx.h"
 #include "file_core.h"
 
-// Checks whether the file at the specified path exists.  Returns nonzero if the file
-// exists; zero if it does not.
-int is_file_accessible(const char* path) {
-	if (path == NULL){
-		LogError("The pathname specified is blank, we cannot do anything with this.");
+///////////////////////////////////////////////////////////////////////////////
+// CreateDirectory function
 
-		return 0; /* failed to locate file with NULL path */
-	}
+void CreateDirectory(const char* pszPath) {
+  if (IsNullOrWhiteSpace(pszPath)) {
+    return;
+  }
 
-	if (path[0] == '\0') {
-		LogError("The pathname specified is blank, we cannot do anything with this.");
-
-		return 0;	/* failed to locate file with blank path */
-	}
-
-	LogDebug("Determining if file '%s' is accessible...", path);
-
-	if (access(path, F_OK) == 0){
-		LogDebug("The file '%s' can be found and we have the correct permissions to access it.", path);
-		return 1;	/* we can access the file */
-	}
-
-	LogDebug("The file '%s' cannot be located, or we do not have full permissions on the file.", path);
-
-	return 0;	/* we either (a) do not have enough permissions to access the file, or (b) it does not exist */
+  mkdir(pszPath, 0777);
 }
 
-/* Reads all text from the file with path 'path'.  The file must exist and we must have full permissions on it.
- * This function returns a NULL pointer value in the case that the data cannot be read from the file.
- */
-char* read_all_text(const char* path) {
-	if (path == NULL || path[0] == '\0' || !is_file_accessible(path)){
-		LogError("No pathname specified in call to read_all_text, or the file referenced is not accessible.");
-		return NULL;	/* Failed to access the file for reading  or it does not exist. */
-	}
+///////////////////////////////////////////////////////////////////////////////
+// CreateDirIfNotExists function
 
-	LogDebug("Attempting to open the file '%s' for reading...", path);
+void CreateDirIfNotExists(const char* pszPathName) {
+  if (IsNullOrWhiteSpace(pszPathName)) {
+    return;
+  }
 
-	char *file_content = NULL;
-	int file_size = 0;
-	FILE *fp;
+  char szExpandedPathName[MAX_PATH + 1];
+  ShellExpand(pszPathName, szExpandedPathName, MAX_PATH + 1);
 
-	fp = fopen(path, "r");
-	if(fp) {
-		LogDebug("The file '%s' has been opened.  Attemtping to read the data from it...", path);
+  if (!DirectoryExists(szExpandedPathName)) {
+    CreateDirectory(szExpandedPathName);
+  }
+}
 
-		fseek(fp, 0, SEEK_END);
-		file_size = ftell(fp);
-		rewind(fp);
+///////////////////////////////////////////////////////////////////////////////
+// DirectoryExists function
 
-		file_content = (char*) malloc((sizeof(char) * file_size) + 1);
+BOOL DirectoryExists(const char* pszPath) {
+  if (IsNullOrWhiteSpace(pszPath)) {
+    return FALSE;
+  }
 
-		long bytes_read = (long)fread(file_content, sizeof(char), file_size, fp);
+  struct stat st = { 0 };
+  return stat(pszPath, &st) == 0;
+}
 
-		LogDebug("Read %lu B from file '%s'.", bytes_read, path);
+///////////////////////////////////////////////////////////////////////////////
+// FileExists function
 
-		fclose(fp);
+// Checks whether the file at the specified path exists.
+// Returns nonzero if the file exists; zero if it does not.
+BOOL FileExists(const char* pszPath) {
+  if (IsNullOrWhiteSpace(pszPath)) {
+    return FALSE;
+  }
 
-		LogDebug("File '%s' has been closed.", path);
-	} else {
-		LogError("Failed to open file '%s' for reading.", path);
-	}
-	return file_content;
+  return access(pszPath, F_OK) == 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ReadAllText function
+
+void ReadAllText(const char* pszPath, char** ppszOutput,
+    int *pnFileSize) {
+  if (IsNullOrWhiteSpace(pszPath) || !FileExists(pszPath)) {
+    fprintf(stderr, "ReadAllText: Can't access the file '%s'.\n",
+        pszPath);
+    exit(EXIT_FAILURE);
+    return;
+  }
+
+  if (ppszOutput == NULL) {
+    fprintf(stderr, "ReadAllText: Missing required parameter 'output'.\n");
+    exit(EXIT_FAILURE);
+    return;
+  }
+  FILE* fp = fopen(pszPath, "r");
+  if (fp == NULL) {
+    fprintf(stderr, "ERROR: Failed to open %s for reading.\n", pszPath);
+    fclose(fp);
+    fp = NULL;
+    exit(EXIT_FAILURE);
+    return;
+  }
+
+  *ppszOutput = (char*) malloc(1025 * sizeof(char));
+  if (ppszOutput == NULL) {
+    fprintf(stderr, "ERROR: Failed to allocate memory.\n");
+    fclose(fp);
+    fp = NULL;
+    exit(EXIT_FAILURE);
+    return;
+  }
+  memset(*ppszOutput, 0, 1025 * sizeof(char));
+
+  char buffer[1025];
+  memset(buffer, 0, 1025);
+
+  int bytes_read_total = 0;
+  int bytes_read = 0;
+
+  while ((bytes_read = fread(buffer, sizeof(char), 1024, fp)) != 0) {
+    bytes_read_total += bytes_read;
+    strcat(*ppszOutput, buffer);
+
+    *ppszOutput = (char*) realloc(*ppszOutput,
+        sizeof(char) * (bytes_read_total + 1025));
+
+    memset(buffer, 0, 1025);
+  }
+
+  *ppszOutput = (char*) realloc(*ppszOutput, (bytes_read_total + 1) * sizeof(char));
+  (*ppszOutput)[bytes_read_total] = '\0';
+
+  *pnFileSize = bytes_read_total;
+
+  return;
 }
 
 void write_all_text(const char* path, const char* content) {
-	if (path == NULL || path[0] == '\0') {
-		LogError("No pathname specified in call to write_all_text.");
-		exit(-1);		/* Cannot write data to a file when no pathname is specified. */
-	}
+  if (path == NULL || path[0] == '\0') {
+    LogError("No pathname specified in call to write_all_text.");
+    exit(-1); /* Cannot write data to a file when no pathname is specified. */
+  }
 
-	if (content == NULL || strlen(content) == 0){
-		LogError("No content specified for writing to the file '%s'.", path);
-		exit(-1);		/* Content must be provided for writing. */
-	}
+  if (content == NULL || strlen(content) == 0) {
+    LogError("No content specified for writing to the file '%s'.", path);
+    exit(-1); /* Content must be provided for writing. */
+  }
 
-	LogDebug("Attempting to open the file '%s' for writing...", path);
+  LogDebug("Attempting to open the file '%s' for writing...", path);
 
-	FILE* fp = fopen(path, "w+");	/* Open the file at path for writing, create if it does not exist. */
-	if (fp) {
-		LogDebug("Successfully opened '%s' for writing.", path);
+  FILE* fp = fopen(path, "w+"); /* Open the file at path for writing, create if it does not exist. */
+  if (fp) {
+    LogDebug("Successfully opened '%s' for writing.", path);
 
+    long bytes_written = (long) fwrite(content, sizeof(char), strlen(content),
+        fp);
+    LogDebug("Wrote %lu B to the file '%s'.", bytes_written, path);
 
-		long bytes_written = (long)fwrite(content, sizeof(char), strlen(content), fp);
-		LogDebug("Wrote %lu B to the file '%s'.", bytes_written, path);
+    fclose(fp);
 
-		fclose(fp);
+    LogDebug("File '%s' has been closed.", path);
 
-		LogDebug("File '%s' has been closed.", path);
+  } else {
+    LogError("ERROR: Failed to open or create the file '%s' for writing.\n",
+        path);
+    exit(-1);
+  }
 
-	} else {
-		LogError("ERROR: Failed to open or create the file '%s' for writing.\n", path);
-		exit(-1);
-	}
-
-	/* Done */
+  /* Done */
 }
 
 /** Shortcut for writing formatted text to a file */
 void save_text_to_file(const char* path, const char* content_format, ...) {
-	va_list args;
-	va_start(args, content_format);
+  va_list args;
+  va_start(args, content_format);
 
-	if (content_format == NULL || content_format[0] == '\0') {
-		return;
-	}
+  if (content_format == NULL || content_format[0] == '\0') {
+    return;
+  }
 
-	char buf[strlen(content_format)+ 1];
+  char buf[strlen(content_format) + 1];
 
-	vsprintf(buf, content_format, args);
+  vsprintf(buf, content_format, args);
 
-	write_all_text(path, buf);
+  write_all_text(path, buf);
 }
 
 /** Prompts the user for the name to use for either saving or opening a file.
@@ -138,34 +185,37 @@ void save_text_to_file(const char* path, const char* content_format, ...) {
  *
  */
 void do_prompt_file_name(const char* prompt, char* path, int path_size) {
-	if (path == NULL){
-		LogError("Null path variable in do_prompt_file_name.  Required parameter.");
-		return;
-	}
+  if (path == NULL) {
+    LogError(
+        "Null path variable in do_prompt_file_name.  Required parameter.");
+    return;
+  }
 
-	if (prompt == NULL || strlen(prompt) == 0){
-		LogError("Null prompt variable in do_prompt_file_name.  Required parameter.");
-		return;
-	}
+  if (prompt == NULL || strlen(prompt) == 0) {
+    LogError(
+        "Null prompt variable in do_prompt_file_name.  Required parameter.");
+    return;
+  }
 
-	if (path_size <= 0){
-		LogError("Must supply integer that is a positive number for the path_size.");
-		return;
-	}
+  if (path_size <= 0) {
+    LogError(
+        "Must supply integer that is a positive number for the path_size.");
+    return;
+  }
 
-	/* Call the get_line function from the console_core library in order to display the prompt and get
-	 * the user's input.  If the user does not specify anything it is probably because the user wants to cancel.
-	 */
-	int retcode = GetLineFromUser(prompt, path, path_size);
+  /* Call the get_line function from the console_core library in order to display the prompt and get
+   * the user's input.  If the user does not specify anything it is probably because the user wants to cancel.
+   */
+  int retcode = GetLineFromUser(prompt, path, path_size);
 
-	if (retcode != OK && retcode != EXACTLY_CORRECT) {
-		/* No error should be shown here, since blank means the user wants to cancel the operation. */
-		return;
-	}
+  if (retcode != OK && retcode != EXACTLY_CORRECT) {
+    /* No error should be shown here, since blank means the user wants to cancel the operation. */
+    return;
+  }
 
-	/* If we are here, the buffer pointed to by the path variable should now contain the path to the file
-	 * that the user wants to work with.
-	 */
+  /* If we are here, the buffer pointed to by the path variable should now contain the path to the file
+   * that the user wants to work with.
+   */
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,16 +249,4 @@ void ShellExpand(const char* pszPathName,
   wordfree(&p);
 }
 
-void CreateDirIfNotExists(const char* pszPathName) {
-	if (IsNullOrWhiteSpace(pszPathName)) {
-		return;
-	}
 
-	char szExpandedPathName[MAX_PATH + 1];
-	ShellExpand(pszPathName, szExpandedPathName, MAX_PATH + 1);
-
-	struct stat st = { 0 };
-	if (-1 == stat(szExpandedPathName, &st)) {
-		mkdir(szExpandedPathName, 0777);
-	}
-}

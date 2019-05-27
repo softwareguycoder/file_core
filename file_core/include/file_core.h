@@ -15,12 +15,16 @@
 #define MAX_PATH      4096
 #endif //MAX_PATH
 
-int is_file_accessible(const char* path);
-char* read_all_text(const char* path);
+void CreateDirectory(const char* pszPath);
+void CreateDirIfNotExists(const char* pszPathName);
+BOOL DirectoryExists(const char* pszPath);
+BOOL FileExists(const char* pszPath);
+void ReadAllText(const char* pszPath, char** ppszOutput,
+    int *pnFileSize);
 void write_all_text(const char* path, const char* content);
 void save_text_to_file(const char* path, const char* content_format, ...);
 void do_prompt_file_name(const char* prompt, char* path, int path_size);
-void CreateDirIfNotExists(const char* pszPathName);
+
 
 /**
  * @brief Expands strings a la Bash. Wraps the wordexp function.

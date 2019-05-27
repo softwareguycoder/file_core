@@ -17,6 +17,8 @@
 
 #include "symbols.h"
 
+#include <include/api_core.h>
+#include <include/common_core.h>
 #include <include/debug_core.h>
 #include <include/console_core.h>
 
