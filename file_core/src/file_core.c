@@ -122,14 +122,19 @@ BOOL FileExists(const char* pszPath) {
 
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
+  char szBuffer[1025];
+  memset(szBuffer, 0, 1025);
+  char szExpandedFileName[MAX_PATH + 1];
+  memset(szExpandedFileName, 0, MAX_PATH + 1);
+  int nBytesRead = 0;
+  int nTotalBytesRead = 0;
+
   /* Nothing to do if the pathname is blank. */
   if (IsNullOrWhiteSpace(pszPath)) {
     return;
   }
 
   /* Expand the file name string a la Bash */
-  char szExpandedFileName[MAX_PATH + 1];
-  memset(szExpandedFileName, 0, MAX_PATH + 1);
   ShellExpand(pszPath, szExpandedFileName, MAX_PATH + 1);
 
   if (!FileExists(szExpandedFileName)) {
@@ -163,27 +168,21 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   }
   memset(*ppszOutput, 0, 1025 * sizeof(char));
 
-  char szBuffer[1025];
-  memset(szBuffer, 0, 1025);
-
-  int bytes_read_total = 0;
-  int bytes_read = 0;
-
-  while ((bytes_read = fread(szBuffer, sizeof(char), 1024, fp)) != 0) {
-    bytes_read_total += bytes_read;
+  while ((nBytesRead = fread(szBuffer, sizeof(char), 1024, fp)) != 0) {
+    nTotalBytesRead += nBytesRead;
     strcat(*ppszOutput, szBuffer);
 
     *ppszOutput = (char*) realloc(*ppszOutput,
-        sizeof(char) * (bytes_read_total + 1025));
+        sizeof(char) * (nTotalBytesRead + 1025));
 
     memset(szBuffer, 0, 1025);
   }
 
   *ppszOutput = (char*) realloc(*ppszOutput,
-      (bytes_read_total + 1) * sizeof(char));
-  (*ppszOutput)[bytes_read_total] = '\0';
+      (nTotalBytesRead + 1) * sizeof(char));
+  (*ppszOutput)[nTotalBytesRead] = '\0';
 
-  *pnFileSize = bytes_read_total;
+  *pnFileSize = nTotalBytesRead;
 
   return;
 }
