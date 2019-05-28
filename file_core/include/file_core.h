@@ -59,6 +59,16 @@ void CreateDirIfNotExists(const char* pszPath);
  * expanded by the Bash shell, such as ~/my/dir.
  */
 BOOL DirectoryExists(const char* pszPath);
+
+/**
+ * @name FileExists
+ * @brief Determines whether a file exists at the path specified.
+ * @param pszPath The file to search for.
+ * @return TRUE if a file exists at the path specified; FALSE
+ * otherwise.
+ * @remarks This function is capable of handling strings that can be
+ * expanded by the Bash shell, such as ~/my/dir/file.txt.
+ */
 BOOL FileExists(const char* pszPath);
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize);
