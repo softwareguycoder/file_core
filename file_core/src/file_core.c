@@ -189,38 +189,52 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   return;
 }
 
-void write_all_text(const char* path, const char* content) {
-  if (path == NULL || path[0] == '\0') {
-    LogError("No pathname specified in call to write_all_text.");
-    exit(-1); /* Cannot write data to a file when no pathname is specified. */
+///////////////////////////////////////////////////////////////////////////////
+// WriteAllText function
+
+void WriteAllText(const char* pszPath, const char* pszContent,
+    BOOL bOverwrite, int* pnBytesWritten) {
+  /* Can't proceed if the pathname is blank */
+  if (IsNullOrWhiteSpace(pszPath)) {
+    return;
   }
 
-  if (content == NULL || strlen(content) == 0) {
-    LogError("No content specified for writing to the file '%s'.", path);
-    exit(-1); /* Content must be provided for writing. */
+  /* If there is nowhere to store the number of bytes written,
+   * can't proceed. */
+  if (pnBytesWritten == NULL) {
+    return;
   }
 
-  LogDebug("Attempting to open the file '%s' for writing...", path);
+  /* Expand the path name a la Bash */
+  char szExpandedPathName[MAX_PATH + 1];
+  memset(szExpandedPathName, 0, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedPathName, MAX_PATH + 1);
 
-  FILE* fp = fopen(path, "w+"); /* Open the file at path for writing, create if it does not exist. */
-  if (fp) {
-    LogDebug("Successfully opened '%s' for writing.", path);
-
-    long bytes_written = (long) fwrite(content, sizeof(char), strlen(content),
-        fp);
-    LogDebug("Wrote %lu B to the file '%s'.", bytes_written, path);
-
-    fclose(fp);
-
-    LogDebug("File '%s' has been closed.", path);
-
-  } else {
-    LogError("ERROR: Failed to open or create the file '%s' for writing.\n",
-        path);
-    exit(-1);
+  /* If the file already exists, and the overwrite flag is set, then
+   * delete the file from the file system first.  */
+  if (FileExists(szExpandedPathName) && bOverwrite) {
+    remove(szExpandedPathName);
   }
 
-  /* Done */
+  /* If the file exists, but content is blank, and overwrite flag is set,
+   * then delete the file using the remove syscall */
+  if (FileExists(szExpandedPathName)
+      && IsNullOrWhiteSpace(pszContent)
+      && bOverwrite) {
+    remove(szExpandedPathName);
+    return;
+  }
+
+  const char* FILE_MODE = bOverwrite ? "w+" : "a+";
+  FILE* fp = fopen(szExpandedPathName, FILE_MODE);
+  if (fp == NULL) {
+    ThrowFileAccessFileException(szExpandedPathName, "WriteAllText");
+  }
+
+  *pnBytesWritten = fprintf(fp, "%s", pszContent);
+  if (*pnBytesWritten < 0) {
+    ThrowFileAccessFileException(pszPath, "WriteAllText");
+  }
 }
 
 /** Shortcut for writing formatted text to a file */

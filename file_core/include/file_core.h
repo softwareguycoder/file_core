@@ -70,9 +70,37 @@ BOOL DirectoryExists(const char* pszPath);
  * expanded by the Bash shell, such as ~/my/dir/file.txt.
  */
 BOOL FileExists(const char* pszPath);
+
+/**
+ * @name ReadAllText
+ * @brief Gets all the text in the specified file.
+ * @param pszPath Pathname to the file to be read.  The file must exist.
+ * @param ppszOutput Address of a pointer variable that will be filled with
+ * the address of memory containing the file's text bytes. This memory is
+ * allocated dynamically on the heap and the size of the memory block
+ * is resized to exactly match the number of bytes read from the file.
+ * @param pnFileSize Address of an integer variable to be filled with the
+ * number of bytes in the file.
+ * @remarks This function can only cope with files that are 2 GB or less
+ * in size.
+ */
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize);
-void write_all_text(const char* path, const char* content);
+
+/**
+ * @name WriteAllText
+ * @brief Writes all the bytes provided to the file at the specified path.
+ * @param pszPath Path of the file to be written.
+ * @param pszContent Content to be written to the file.
+ * @param bOverwrite TRUE to overwrite any file that already exists; FALSE
+ * to open the file for appending.
+ * @param pnBytesWritten Address of an integer variable that receives the
+ * number of bytes written.
+ * @remark This function can only work with 2 GB or less of content.
+ */
+void WriteAllText(const char* pszPath, const char* pszContent,
+    BOOL bOverwrite, int* pnBytesWritten);
+
 void save_text_to_file(const char* path, const char* content_format, ...);
 void do_prompt_file_name(const char* prompt, char* path, int path_size);
 
