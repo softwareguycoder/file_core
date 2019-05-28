@@ -25,7 +25,10 @@
  * case, or if the directory indicated already exists, or if the path is blank.
  * Upon failure, this function will simply give up and return to the caller,
  * except if the mkdir() system call fails; in which case, the function
- * raises an error message to STDERR and exits the application.
+ * raises an error message to STDERR and exits the application. NOTE: This
+ * function is capable of expanding strings like the Bash shell; i.e.,
+ * ~/my/dir will be expanded to /home/user/my/dir, where user is the username
+ * of the currently-logged-in user.
  */
 void CreateDirectory(const char* pszPath);
 
@@ -39,9 +42,22 @@ void CreateDirectory(const char* pszPath);
  * path is blank, then this function simply gives up.  Otherwise, the function
  * will throw an error to STDERR if if it cannot get the operating system to
  * assist it in the process.  If this happens, the function will forcibly
- * terminate the application as well.
+ * terminate the application as well. NOTE: This
+ * function is capable of expanding strings like the Bash shell; i.e.,
+ * ~/my/dir will be expanded to /home/user/my/dir, where user is the username
+ * of the currently-logged-in user.
  */
 void CreateDirIfNotExists(const char* pszPathName);
+
+/**
+ * @name DirectoryExists
+ * @brief Determines whether the directory exists at the path specified.
+ * @param pszPath The directory to search for.
+ * @return TRUE if the directory exists at the path specified; FALSE
+ * otherwise.
+ * @remarks This function is capable of handling strings that can be
+ * expanded by the Bash shell, such as ~/my/dir.
+ */
 BOOL DirectoryExists(const char* pszPath);
 BOOL FileExists(const char* pszPath);
 void ReadAllText(const char* pszPath, char** ppszOutput,
