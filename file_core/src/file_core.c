@@ -10,6 +10,22 @@
 #include "file_core.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+// Internal-use-only functions
+
+///////////////////////////////////////////////////////////////////////////////
+// ThrowFileAccessException function
+
+void ThrowFileAccessFileException(const char* pszPath,
+    const char* pszMessage) {
+  fprintf(stderr, "%s: Can't access the file '%s'.\n",
+      pszMessage, pszPath);
+  exit(EXIT_FAILURE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ThrowFileNotFoundException function
+
+///////////////////////////////////////////////////////////////////////////////
 // CreateDirectory function
 
 void CreateDirectory(const char* pszPath) {
@@ -99,10 +115,8 @@ BOOL FileExists(const char* pszPath) {
 
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
-  if (IsNullOrWhiteSpace(pszPath) || !FileExists(pszPath)) {
-    fprintf(stderr, "ReadAllText: Can't access the file '%s'.\n",
-        pszPath);
-    exit(EXIT_FAILURE);
+  /* Nothing to do if the pathname is blank. */
+  if (IsNullOrWhiteSpace(pszPath)) {
     return;
   }
 
