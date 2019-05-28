@@ -36,7 +36,7 @@ void CreateDirectory(const char* pszPath);
  * @name CreateDirIfNotExists
  * @brief Determines whether the specified directory exists at the specified
  * path; if this is not the case, attempts to create the directory.
- * @param pszPathName The directory to create.
+ * @param pszPath The directory to create.
  * @remarks Attempts to discover whether the specified directory exists.  If
  * this is not the case, attempts to create the specified directory.  If the
  * path is blank, then this function simply gives up.  Otherwise, the function
@@ -47,7 +47,7 @@ void CreateDirectory(const char* pszPath);
  * ~/my/dir will be expanded to /home/user/my/dir, where user is the username
  * of the currently-logged-in user.
  */
-void CreateDirIfNotExists(const char* pszPathName);
+void CreateDirIfNotExists(const char* pszPath);
 
 /**
  * @name DirectoryExists
