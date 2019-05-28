@@ -122,6 +122,7 @@ BOOL FileExists(const char* pszPath) {
 
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
+
   const int CHUNK_SIZE = 1024;  /* chunk size, in bytes */
   char szBuffer[CHUNK_SIZE + 1];
   memset(szBuffer, 0, CHUNK_SIZE + 1);
