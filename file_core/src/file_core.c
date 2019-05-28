@@ -123,7 +123,7 @@ BOOL FileExists(const char* pszPath) {
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
 
-  const int CHUNK_SIZE = 1024;  /* chunk size, in bytes */
+  const int CHUNK_SIZE = 1024; /* chunk size, in bytes */
   char szBuffer[CHUNK_SIZE + 1];
   memset(szBuffer, 0, CHUNK_SIZE + 1);
   char szExpandedFileName[MAX_PATH + 1];
@@ -160,7 +160,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     return;
   }
 
-  *ppszOutput = (char*) malloc((CHUNK_SIZE + 1)* sizeof(char));
+  *ppszOutput = (char*) malloc((CHUNK_SIZE + 1) * sizeof(char));
   if (ppszOutput == NULL) {
     fprintf(stderr, "ERROR: Failed to allocate memory.\n");
     fclose(fp);
@@ -168,7 +168,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     exit(EXIT_FAILURE);
     return;
   }
-  memset(*ppszOutput, 0, (CHUNK_SIZE + 1)*sizeof(char));
+  memset(*ppszOutput, 0, (CHUNK_SIZE + 1) * sizeof(char));
 
   while ((nBytesRead = fread(szBuffer, sizeof(char), CHUNK_SIZE, fp)) != 0) {
     nTotalBytesRead += nBytesRead;
@@ -237,20 +237,52 @@ void WriteAllText(const char* pszPath, const char* pszContent,
   }
 }
 
-/** Shortcut for writing formatted text to a file */
-void save_text_to_file(const char* path, const char* content_format, ...) {
-  va_list args;
-  va_start(args, content_format);
+///////////////////////////////////////////////////////////////////////////////
+// WriteFormattedTextToFile function
 
-  if (content_format == NULL || content_format[0] == '\0') {
+void WriteFormattedTextToFile(BOOL bOverwrite, int* pnBytesWritten,
+    const char* pszPath, const char* pszContentFormat, ...) {
+  /* Can't proceed if the pathname is blank */
+  if (IsNullOrWhiteSpace(pszPath)) {
     return;
   }
 
-  char buf[strlen(content_format) + 1];
+  /* If there is nowhere to store the number of bytes written,
+   * can't proceed. */
+  if (pnBytesWritten == NULL) {
+    return;
+  }
 
-  vsprintf(buf, content_format, args);
+  /* Expand the path name a la Bash */
+  char szExpandedPathName[MAX_PATH + 1];
+  memset(szExpandedPathName, 0, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedPathName, MAX_PATH + 1);
 
-  write_all_text(path, buf);
+  /* If the file already exists, and the overwrite flag is set, then
+   * delete the file from the file system first.  */
+  if (FileExists(szExpandedPathName) && bOverwrite) {
+    remove(szExpandedPathName);
+  }
+
+  /* If the file exists, but content is blank, and overwrite flag is set,
+   * then delete the file using the remove syscall */
+  if (FileExists(szExpandedPathName)
+      && IsNullOrWhiteSpace(pszContentFormat)
+      && bOverwrite) {
+    remove(szExpandedPathName);
+    return;
+  }
+
+  va_list args;
+  va_start(args, pszContentFormat);
+
+  const int CONTENT_SIZE = strlen(pszContentFormat) + 1;
+  char szBuffer[CONTENT_SIZE];
+  memset(szBuffer, 0, CONTENT_SIZE);
+
+  vsprintf(szBuffer, pszContentFormat, args);
+
+  WriteAllText(pszPath, szBuffer, bOverwrite, pnBytesWritten);
 }
 
 /** Prompts the user for the name to use for either saving or opening a file.

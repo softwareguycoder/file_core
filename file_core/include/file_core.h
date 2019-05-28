@@ -101,7 +101,21 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
 void WriteAllText(const char* pszPath, const char* pszContent,
     BOOL bOverwrite, int* pnBytesWritten);
 
-void save_text_to_file(const char* path, const char* content_format, ...);
+/**
+ * @name WriteFormattedTextToFile
+ * @brief Writes formatted data to the specified file.
+ * @param bOverwrite TRUE to overwrite any file that already exists at the
+ * specified path; FALSE to append the new content to an existing file.
+ * Either way, this function creates the file at the given path if it does
+ * not already exist.
+ * @param pnBytesWritten Address of an integer variable that receives the
+ * number of bytes written.
+ * @param pszPath Path of the file to be written.
+ * @param pszContentFormat Format for the data to be written.
+ */
+void WriteFormattedTextToFile(BOOL bOverwrite, int* pnBytesWritten,
+    const char* pszPath, const char* pszContentFormat, ...);
+
 void do_prompt_file_name(const char* prompt, char* path, int path_size);
 
 
