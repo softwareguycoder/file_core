@@ -79,14 +79,19 @@ BOOL DirectoryExists(const char* pszPath) {
 ///////////////////////////////////////////////////////////////////////////////
 // FileExists function
 
-// Checks whether the file at the specified path exists.
-// Returns nonzero if the file exists; zero if it does not.
 BOOL FileExists(const char* pszPath) {
+  /* If the path is blank, then we have nothing to do. */
   if (IsNullOrWhiteSpace(pszPath)) {
     return FALSE;
   }
 
-  return access(pszPath, F_OK) == 0;
+  /* Be sure to expand the path name string just like Bash would */
+  char szExpandedPathName[MAX_PATH + 1];
+  memset(szExpandedPathName, 0, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedPathName, MAX_PATH + 1);
+
+  /* Use the access syscall to determine whether the file exists. */
+  return access(szExpandedPathName, F_OK) == OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
