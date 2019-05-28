@@ -60,12 +60,20 @@ void CreateDirIfNotExists(const char* pszPathName) {
 // DirectoryExists function
 
 BOOL DirectoryExists(const char* pszPath) {
+  /* If the path is blank, then we have nothing to do. */
   if (IsNullOrWhiteSpace(pszPath)) {
     return FALSE;
   }
 
+  /* Be sure to expand the path name string just like Bash would */
+  char szExpandedPathName[MAX_PATH + 1];
+  memset(szExpandedPathName, 0, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedPathName, MAX_PATH + 1);
+
+  /* Check for the existence of the specified directory using
+   * the stat syscall. */
   struct stat st = { 0 };
-  return stat(pszPath, &st) == 0;
+  return stat(szExpandedPathName, &st) == 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -133,7 +141,8 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     memset(buffer, 0, 1025);
   }
 
-  *ppszOutput = (char*) realloc(*ppszOutput, (bytes_read_total + 1) * sizeof(char));
+  *ppszOutput = (char*) realloc(*ppszOutput,
+      (bytes_read_total + 1) * sizeof(char));
   (*ppszOutput)[bytes_read_total] = '\0';
 
   *pnFileSize = bytes_read_total;
@@ -268,5 +277,4 @@ void ShellExpand(const char* pszPathName,
 
   wordfree(&p);
 }
-
 
