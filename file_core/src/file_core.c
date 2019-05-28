@@ -25,6 +25,13 @@ void ThrowFileAccessFileException(const char* pszPath,
 ///////////////////////////////////////////////////////////////////////////////
 // ThrowFileNotFoundException function
 
+void ThrowFileNotFoundException(const char* pszPath,
+    const char* pszMessage) {
+  fprintf(stderr, "%s: File '%s' not found or not accessible.\n",
+      pszMessage, pszPath);
+  exit(EXIT_FAILURE);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CreateDirectory function
 
