@@ -122,8 +122,9 @@ BOOL FileExists(const char* pszPath) {
 
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
-  char szBuffer[1025];
-  memset(szBuffer, 0, 1025);
+  const int CHUNK_SIZE = 1024;  /* chunk size, in bytes */
+  char szBuffer[CHUNK_SIZE + 1];
+  memset(szBuffer, 0, CHUNK_SIZE + 1);
   char szExpandedFileName[MAX_PATH + 1];
   memset(szExpandedFileName, 0, MAX_PATH + 1);
   int nBytesRead = 0;
@@ -158,7 +159,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     return;
   }
 
-  *ppszOutput = (char*) malloc(1025 * sizeof(char));
+  *ppszOutput = (char*) malloc((CHUNK_SIZE + 1)* sizeof(char));
   if (ppszOutput == NULL) {
     fprintf(stderr, "ERROR: Failed to allocate memory.\n");
     fclose(fp);
@@ -166,16 +167,16 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     exit(EXIT_FAILURE);
     return;
   }
-  memset(*ppszOutput, 0, 1025 * sizeof(char));
+  memset(*ppszOutput, 0, (CHUNK_SIZE + 1)*sizeof(char));
 
-  while ((nBytesRead = fread(szBuffer, sizeof(char), 1024, fp)) != 0) {
+  while ((nBytesRead = fread(szBuffer, sizeof(char), CHUNK_SIZE, fp)) != 0) {
     nTotalBytesRead += nBytesRead;
     strcat(*ppszOutput, szBuffer);
 
     *ppszOutput = (char*) realloc(*ppszOutput,
-        sizeof(char) * (nTotalBytesRead + 1025));
+        sizeof(char) * (nTotalBytesRead + CHUNK_SIZE + 1));
 
-    memset(szBuffer, 0, 1025);
+    memset(szBuffer, 0, CHUNK_SIZE + 1);
   }
 
   *ppszOutput = (char*) realloc(*ppszOutput,
