@@ -127,14 +127,25 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     return;
   }
 
+  /* Expand the file name string a la Bash */
+  char szExpandedFileName[MAX_PATH + 1];
+  memset(szExpandedFileName, 0, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedFileName, MAX_PATH + 1);
+
+  if (!FileExists(szExpandedFileName)) {
+    ThrowFileNotFoundException(pszPath, "ReadAllText");
+  }
+
   if (ppszOutput == NULL) {
     fprintf(stderr, "ReadAllText: Missing required parameter 'output'.\n");
     exit(EXIT_FAILURE);
     return;
   }
-  FILE* fp = fopen(pszPath, "r");
+  FILE* fp = fopen(szExpandedFileName, "r");
   if (fp == NULL) {
-    fprintf(stderr, "ERROR: Failed to open %s for reading.\n", pszPath);
+    fprintf(stderr, "ERROR: Failed to open %s for reading.\n",
+        szExpandedFileName);
+
     fclose(fp);
     fp = NULL;
     exit(EXIT_FAILURE);
