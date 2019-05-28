@@ -28,6 +28,19 @@
  * raises an error message to STDERR and exits the application.
  */
 void CreateDirectory(const char* pszPath);
+
+/**
+ * @name CreateDirIfNotExists
+ * @brief Determines whether the specified directory exists at the specified
+ * path; if this is not the case, attempts to create the directory.
+ * @param pszPathName The directory to create.
+ * @remarks Attempts to discover whether the specified directory exists.  If
+ * this is not the case, attempts to create the specified directory.  If the
+ * path is blank, then this function simply gives up.  Otherwise, the function
+ * will throw an error to STDERR if if it cannot get the operating system to
+ * assist it in the process.  If this happens, the function will forcibly
+ * terminate the application as well.
+ */
 void CreateDirIfNotExists(const char* pszPathName);
 BOOL DirectoryExists(const char* pszPath);
 BOOL FileExists(const char* pszPath);
