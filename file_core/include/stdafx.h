@@ -1,12 +1,8 @@
-/*
- * stdafx.h
- *
- *  Created on: Jul 26, 2018
- *      Author: bhart
- */
+// stdafx.h - File necessary for precompiled header support
+//
 
-#ifndef __STDAFX_H__
-#define __STDAFX_H__
+#ifndef __FILE_CORE_STDAFX_H__
+#define __FILE_CORE_STDAFX_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,9 +13,10 @@
 
 #include "symbols.h"
 
-#include <include/api_core.h>
-#include <include/common_core.h>
-#include <include/debug_core.h>
-#include <include/console_core.h>
+#include <../../api_core/api_core/include/api_core.h>
+#include <../../common_core/common_core/include/common_core.h>
+#include <../../console_core/console_core/include/console_core.h>
+#include <../../debug_core/debug_core/include/debug_core.h>
 
-#endif /* __STDAFX_H__ */
+
+#endif /* __FILE_CORE_STDAFX_H__ */
