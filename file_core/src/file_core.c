@@ -17,7 +17,16 @@ void CreateDirectory(const char* pszPath) {
     return;
   }
 
-  mkdir(pszPath, 0777);
+  /* Be sure the directory does not already exist */
+  if (DirectoryExists(pszPath)) {
+    return;
+  }
+
+  /* Raise an exception if mkdir call fails */
+  if (OK != mkdir(pszPath, 0777)) {
+    perror("CreateDirectory");
+    exit(EXIT_FAILURE);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

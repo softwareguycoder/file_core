@@ -15,6 +15,18 @@
 #define MAX_PATH      4096
 #endif //MAX_PATH
 
+/**
+ * @name CreateDirectory
+ * @brief Creates all the directories in a specified path.
+ * @param pszPath The directory to create.
+ * @remarks Attempts to create the directory(ies) indicated by the specified
+ * path.  The caller of this function must have the appropriate access
+ * privileges granted by the operating system.  Fails if this is not the
+ * case, or if the directory indicated already exists, or if the path is blank.
+ * Upon failure, this function will simply give up and return to the caller,
+ * except if the mkdir() system call fails; in which case, the function
+ * raises an error message to STDERR and exits the application.
+ */
 void CreateDirectory(const char* pszPath);
 void CreateDirIfNotExists(const char* pszPathName);
 BOOL DirectoryExists(const char* pszPath);
