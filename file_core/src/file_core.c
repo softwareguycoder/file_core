@@ -37,17 +37,17 @@ void CreateDirectory(const char* pszPath) {
 ///////////////////////////////////////////////////////////////////////////////
 // CreateDirIfNotExists function
 
-void CreateDirIfNotExists(const char* pszPathName) {
+void CreateDirIfNotExists(const char* pszPath) {
   /* If the path name provided is blank, then
    * there is nothing to do. */
-  if (IsNullOrWhiteSpace(pszPathName)) {
+  if (IsNullOrWhiteSpace(pszPath)) {
     return;
   }
 
   /* Be sure to expand the path name string just like Bash would */
   char szExpandedPathName[MAX_PATH + 1];
   memset(szExpandedPathName, 0, MAX_PATH + 1);
-  ShellExpand(pszPathName, szExpandedPathName, MAX_PATH + 1);
+  ShellExpand(pszPath, szExpandedPathName, MAX_PATH + 1);
 
   /* Check whether the specified directory exists.  If it does not,
    * then try to create it. */
