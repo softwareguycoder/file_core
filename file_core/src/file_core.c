@@ -141,6 +141,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     exit(EXIT_FAILURE);
     return;
   }
+
   FILE* fp = fopen(szExpandedFileName, "r");
   if (fp == NULL) {
     fprintf(stderr, "ERROR: Failed to open %s for reading.\n",
@@ -162,20 +163,20 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   }
   memset(*ppszOutput, 0, 1025 * sizeof(char));
 
-  char buffer[1025];
-  memset(buffer, 0, 1025);
+  char szBuffer[1025];
+  memset(szBuffer, 0, 1025);
 
   int bytes_read_total = 0;
   int bytes_read = 0;
 
-  while ((bytes_read = fread(buffer, sizeof(char), 1024, fp)) != 0) {
+  while ((bytes_read = fread(szBuffer, sizeof(char), 1024, fp)) != 0) {
     bytes_read_total += bytes_read;
-    strcat(*ppszOutput, buffer);
+    strcat(*ppszOutput, szBuffer);
 
     *ppszOutput = (char*) realloc(*ppszOutput,
         sizeof(char) * (bytes_read_total + 1025));
 
-    memset(buffer, 0, 1025);
+    memset(szBuffer, 0, 1025);
   }
 
   *ppszOutput = (char*) realloc(*ppszOutput,
