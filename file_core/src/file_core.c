@@ -33,6 +33,25 @@ void ThrowFileNotFoundException(const char* pszPath,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Publicly-exposed functions
+
+///////////////////////////////////////////////////////////////////////////////
+// CloseFile function
+
+void CloseFile(FILE** fppFile) {
+  if (fppFile == NULL) {
+    return; // Required parameter
+  }
+
+  if (*fppFile == NULL) {
+    return; // Required parameter - or file is already closed
+  }
+
+  fclose(*fppFile);
+  *fppFile = NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CreateDirectory function
 
 void CreateDirectory(const char* pszPath) {
@@ -124,10 +143,13 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
 
   const int CHUNK_SIZE = 1024; /* chunk size, in bytes */
+
   char szBuffer[CHUNK_SIZE + 1];
   memset(szBuffer, 0, CHUNK_SIZE + 1);
+
   char szExpandedFileName[MAX_PATH + 1];
   memset(szExpandedFileName, 0, MAX_PATH + 1);
+
   int nBytesRead = 0;
   int nTotalBytesRead = 0;
 
@@ -154,8 +176,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
     fprintf(stderr, "ERROR: Failed to open %s for reading.\n",
         szExpandedFileName);
 
-    fclose(fp);
-    fp = NULL;
+    CloseFile(&fp);
     exit(EXIT_FAILURE);
     return;
   }
@@ -163,8 +184,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   *ppszOutput = (char*) malloc((CHUNK_SIZE + 1) * sizeof(char));
   if (ppszOutput == NULL) {
     fprintf(stderr, "ERROR: Failed to allocate memory.\n");
-    fclose(fp);
-    fp = NULL;
+    CloseFile(&fp);
     exit(EXIT_FAILURE);
     return;
   }
@@ -179,6 +199,8 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
 
     memset(szBuffer, 0, CHUNK_SIZE + 1);
   }
+
+  CloseFile(&fp);
 
   *ppszOutput = (char*) realloc(*ppszOutput,
       (nTotalBytesRead + 1) * sizeof(char));
@@ -216,11 +238,10 @@ void WriteAllText(const char* pszPath, const char* pszContent,
     remove(szExpandedPathName);
   }
 
-  /* If the file exists, but content is blank, and overwrite flag is set,
-   * then delete the file using the remove syscall */
+  /* If the file exists, but content is blank (regardless of the state of
+   * the overwrite flag), then delete the file using the remove syscall. */
   if (FileExists(szExpandedPathName)
-      && IsNullOrWhiteSpace(pszContent)
-      && bOverwrite) {
+      && IsNullOrWhiteSpace(pszContent)) {
     remove(szExpandedPathName);
     return;
   }
@@ -228,13 +249,17 @@ void WriteAllText(const char* pszPath, const char* pszContent,
   const char* FILE_MODE = bOverwrite ? "w+" : "a+";
   FILE* fp = fopen(szExpandedPathName, FILE_MODE);
   if (fp == NULL) {
+    CloseFile(&fp);
     ThrowFileAccessFileException(szExpandedPathName, "WriteAllText");
   }
 
   *pnBytesWritten = fprintf(fp, "%s", pszContent);
   if (*pnBytesWritten < 0) {
+    CloseFile(&fp);
     ThrowFileAccessFileException(pszPath, "WriteAllText");
   }
+
+  CloseFile(&fp);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -333,7 +358,7 @@ void do_prompt_file_name(const char* prompt, char* path, int path_size) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CreateDirIfNotExists function
+// ShellExpand function
 
 void ShellExpand(const char* pszPathName,
     char* pszBuffer, int nBufferSize) {

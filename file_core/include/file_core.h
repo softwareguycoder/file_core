@@ -16,6 +16,17 @@
 #endif //MAX_PATH
 
 /**
+ * @name CloseFile
+ * @brief Closes the file specified.
+ * @param fppFile Address of the FILE pointer to the file.
+ * @remark The pointer located at the address in fppFile has fclose() called
+ * on it by this function.  Then, this function sets the value pointed to
+ * by fppFile to NULL.  The pointer referenced by fppFile must have been
+ * previously opened with a call to fopen() or popen().
+ */
+void CloseFile(FILE** fppFile);
+
+/**
  * @name CreateDirectory
  * @brief Creates all the directories in a specified path.
  * @param pszPath The directory to create.
