@@ -82,6 +82,10 @@ BOOL DirectoryExists(const char* pszPath);
  */
 BOOL FileExists(const char* pszPath);
 
+void GetCurrentWorkingDirectory(char* pszCurrentWorkingDir, int nBufferSize);
+
+void GetHomeDirectoryPath(char** ppszHomePath);
+
 /**
  * @name ReadAllText
  * @brief Gets all the text in the specified file.
@@ -97,6 +101,8 @@ BOOL FileExists(const char* pszPath);
  */
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize);
+
+void SetCurrentWorkingDirectory(const char* pszDirectoryPath);
 
 /**
  * @name WriteAllText

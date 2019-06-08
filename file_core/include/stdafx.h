@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <wordexp.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "symbols.h"
 

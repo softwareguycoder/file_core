@@ -9,6 +9,8 @@
 #include "stdafx.h"
 #include "file_core.h"
 
+#include "file_core_symbols.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // Publicly-exposed functions
 
@@ -114,6 +116,45 @@ BOOL FileExists(const char* pszPath) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// GetCurrentWorkingDirectory function
+
+void GetCurrentWorkingDirectory(char* pszCurrentWorkingDir, int nBufferSize) {
+  memset(pszCurrentWorkingDir, 0, nBufferSize);
+
+  char szResult[nBufferSize];
+  memset(szResult, 0, nBufferSize);
+
+  if (getcwd(szResult, nBufferSize) == NULL) {
+    fprintf(stderr, "ERROR: Could not access current working directory.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  strncpy(pszCurrentWorkingDir, szResult, nBufferSize);
+}
+
+void GetHomeDirectoryPath(char** ppszHomePath) {
+  if (ppszHomePath == NULL) {
+    return;
+  }
+
+  *ppszHomePath = getenv(HOME_ENVIRONMENT_VARIABLE_NAME);
+  if (!IsNullOrWhiteSpace(*ppszHomePath)) {
+    return;
+  }
+
+  struct passwd pwent = { 0 };
+  struct passwd *pwentp;
+  char buf[1024];
+
+  if (OK != getpwuid_r(getuid(), &pwent, buf, sizeof(buf), &pwentp)) {
+    fprintf(stderr, "ERROR: Failed to get user home directory path.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  *ppszHomePath = pwentp->pw_dir;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // ReadAllText function
 
 void ReadAllText(const char* pszPath, char** ppszOutput,
@@ -186,6 +227,30 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   *pnFileSize = nTotalBytesRead;
 
   return;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// SetCurrentWorkingDirectory function
+
+void SetCurrentWorkingDirectory(const char* pszDirectoryPath) {
+  if (IsNullOrWhiteSpace(pszDirectoryPath)) {
+    return;
+  }
+
+  /* Be sure to expand the path name string just like Bash would */
+  char szExpandedPathName[MAX_PATH + 1];
+  memset(szExpandedPathName, 0, MAX_PATH + 1);
+  ShellExpand(pszDirectoryPath, szExpandedPathName, MAX_PATH + 1);
+
+  if (!DirectoryExists(szExpandedPathName)) {
+    ThrowDirectoryNotFoundException(szExpandedPathName, NULL);
+  }
+
+  if (OK != chdir(szExpandedPathName)) {
+    fprintf(stderr, "ERROR: Failed to set the current directory to '%s'.\n",
+        szExpandedPathName);
+    exit(EXIT_FAILURE);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -355,6 +420,9 @@ void ShellExpand(const char* pszPathName,
 
   wordexp_t p;
   wordexp(pszPathName, &p, 0);
+  if (p.we_wordv == NULL) {
+    return;
+  }
   char **w = p.we_wordv;
   if (p.we_wordc <= 0 || IsNullOrWhiteSpace(w[0])) {
     return;
