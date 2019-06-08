@@ -17,6 +17,6 @@
 #include <../../common_core/common_core/include/common_core.h>
 #include <../../console_core/console_core/include/console_core.h>
 #include <../../debug_core/debug_core/include/debug_core.h>
-
+#include <../../exceptions_core/exceptions_core/include/exceptions_core.h>
 
 #endif /* __FILE_CORE_STDAFX_H__ */

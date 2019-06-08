@@ -10,29 +10,6 @@
 #include "file_core.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// Internal-use-only functions
-
-///////////////////////////////////////////////////////////////////////////////
-// ThrowFileAccessException function
-
-void ThrowFileAccessFileException(const char* pszPath,
-    const char* pszMessage) {
-  fprintf(stderr, "%s: Can't access the file '%s'.\n",
-      pszMessage, pszPath);
-  exit(EXIT_FAILURE);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ThrowFileNotFoundException function
-
-void ThrowFileNotFoundException(const char* pszPath,
-    const char* pszMessage) {
-  fprintf(stderr, "%s: File '%s' not found or not accessible.\n",
-      pszMessage, pszPath);
-  exit(EXIT_FAILURE);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Publicly-exposed functions
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,7 +139,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   ShellExpand(pszPath, szExpandedFileName, MAX_PATH + 1);
 
   if (!FileExists(szExpandedFileName)) {
-    ThrowFileNotFoundException(pszPath, "ReadAllText");
+    ThrowFileNotFoundException(pszPath, "");
   }
 
   if (ppszOutput == NULL) {
@@ -250,13 +227,13 @@ void WriteAllText(const char* pszPath, const char* pszContent,
   FILE* fp = fopen(szExpandedPathName, FILE_MODE);
   if (fp == NULL) {
     CloseFile(&fp);
-    ThrowFileAccessFileException(szExpandedPathName, "WriteAllText");
+    ThrowFileAccessFailedException(szExpandedPathName, "WriteAllText");
   }
 
   *pnBytesWritten = fprintf(fp, "%s", pszContent);
   if (*pnBytesWritten < 0) {
     CloseFile(&fp);
-    ThrowFileAccessFileException(pszPath, "WriteAllText");
+    ThrowFileAccessFailedException(pszPath, "WriteAllText");
   }
 
   CloseFile(&fp);
