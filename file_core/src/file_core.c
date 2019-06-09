@@ -180,7 +180,7 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   ShellExpand(pszPath, szExpandedFileName, MAX_PATH + 1);
 
   if (!FileExists(szExpandedFileName)) {
-    ThrowFileNotFoundException(pszPath, "");
+    ThrowFileNotFoundException("ReadAllText", pszPath, NULL);
   }
 
   if (ppszOutput == NULL) {
@@ -243,7 +243,8 @@ void SetCurrentWorkingDirectory(const char* pszDirectoryPath) {
   ShellExpand(pszDirectoryPath, szExpandedPathName, MAX_PATH + 1);
 
   if (!DirectoryExists(szExpandedPathName)) {
-    ThrowDirectoryNotFoundException(szExpandedPathName, NULL);
+    ThrowDirectoryNotFoundException("SetCurrentWorkingDirectory",
+        szExpandedPathName, NULL);
   }
 
   if (OK != chdir(szExpandedPathName)) {
@@ -292,13 +293,15 @@ void WriteAllText(const char* pszPath, const char* pszContent,
   FILE* fp = fopen(szExpandedPathName, FILE_MODE);
   if (fp == NULL) {
     CloseFile(&fp);
-    ThrowFileAccessFailedException(szExpandedPathName, "WriteAllText");
+    ThrowFileAccessFailedException("WriteAllText",
+        szExpandedPathName, NULL);
   }
 
   *pnBytesWritten = fprintf(fp, "%s", pszContent);
   if (*pnBytesWritten < 0) {
     CloseFile(&fp);
-    ThrowFileAccessFailedException(pszPath, "WriteAllText");
+    ThrowFileAccessFailedException("WriteAllText",
+        szExpandedPathName, NULL);
   }
 
   CloseFile(&fp);
