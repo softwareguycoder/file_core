@@ -232,9 +232,9 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
 ///////////////////////////////////////////////////////////////////////////////
 // SetCurrentWorkingDirectory function
 
-void SetCurrentWorkingDirectory(const char* pszDirectoryPath) {
+BOOL SetCurrentWorkingDirectory(const char* pszDirectoryPath) {
   if (IsNullOrWhiteSpace(pszDirectoryPath)) {
-    return;
+    return FALSE;
   }
 
   /* Be sure to expand the path name string just like Bash would */
@@ -243,15 +243,16 @@ void SetCurrentWorkingDirectory(const char* pszDirectoryPath) {
   ShellExpand(pszDirectoryPath, szExpandedPathName, MAX_PATH + 1);
 
   if (!DirectoryExists(szExpandedPathName)) {
-    ThrowDirectoryNotFoundException("SetCurrentWorkingDirectory",
-        szExpandedPathName, NULL);
+    return FALSE;
   }
 
   if (OK != chdir(szExpandedPathName)) {
     fprintf(stderr, "ERROR: Failed to set the current directory to '%s'.\n",
         szExpandedPathName);
-    exit(EXIT_FAILURE);
+    return FALSE;
   }
+
+  return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

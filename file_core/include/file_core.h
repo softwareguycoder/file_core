@@ -102,7 +102,7 @@ void GetHomeDirectoryPath(char** ppszHomePath);
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize);
 
-void SetCurrentWorkingDirectory(const char* pszDirectoryPath);
+BOOL SetCurrentWorkingDirectory(const char* pszDirectoryPath);
 
 /**
  * @name WriteAllText
