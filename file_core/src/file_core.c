@@ -225,8 +225,6 @@ void ReadAllText(const char* pszPath, char** ppszOutput,
   (*ppszOutput)[nTotalBytesRead] = '\0';
 
   *pnFileSize = nTotalBytesRead;
-
-  return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
