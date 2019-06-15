@@ -84,7 +84,7 @@ BOOL FileExists(const char* pszPath);
 
 void GetCurrentWorkingDirectory(char* pszCurrentWorkingDir, int nBufferSize);
 
-void GetHomeDirectoryPath(char** ppszHomePath);
+void GetHomeDirectoryPath(char* pszDirectoryPath);
 
 /**
  * @name ReadAllText

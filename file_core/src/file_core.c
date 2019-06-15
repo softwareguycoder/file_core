@@ -132,13 +132,14 @@ void GetCurrentWorkingDirectory(char* pszCurrentWorkingDir, int nBufferSize) {
   strncpy(pszCurrentWorkingDir, szResult, nBufferSize);
 }
 
-void GetHomeDirectoryPath(char** ppszHomePath) {
-  if (ppszHomePath == NULL) {
+void GetHomeDirectoryPath(char* pszDirectoryPath) {
+  if (pszDirectoryPath == NULL) {
     return;
   }
 
-  *ppszHomePath = getenv(HOME_ENVIRONMENT_VARIABLE_NAME);
-  if (!IsNullOrWhiteSpace(*ppszHomePath)) {
+  char *pszResult = getenv(HOME_ENVIRONMENT_VARIABLE_NAME);
+  if (!IsNullOrWhiteSpace(pszResult)) {
+    strcpy(pszDirectoryPath, pszResult);
     return;
   }
 
@@ -151,7 +152,7 @@ void GetHomeDirectoryPath(char** ppszHomePath) {
     exit(EXIT_FAILURE);
   }
 
-  *ppszHomePath = pwentp->pw_dir;
+  strcpy(pszDirectoryPath, pwentp->pw_dir);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,7 +161,7 @@ void GetHomeDirectoryPath(char** ppszHomePath) {
 void ReadAllText(const char* pszPath, char** ppszOutput,
     int *pnFileSize) {
 
-  const int CHUNK_SIZE = 1024; /* chunk size, in bytes */
+  const int CHUNK_SIZE = 1035; /* chunk size, in bytes */
 
   char szBuffer[CHUNK_SIZE + 1];
   memset(szBuffer, 0, CHUNK_SIZE + 1);
